@@ -14,6 +14,9 @@ func Credito(transacao entities.Transacao) (float64, float64, bool, error) {
 	ctx := context.Background()
 	db := database.GetDB()
 
+	errChan := make(chan error, 2)
+	doneChan := make(chan bool, 2)
+
 	tx, err := db.BeginTx(ctx, &sql.TxOptions{})
 
 	cliente, err := BuscaCliente(transacao.IDCliente)
@@ -22,30 +25,46 @@ func Credito(transacao entities.Transacao) (float64, float64, bool, error) {
 		return 0, 0, false, err
 	}
 	novoSaldo := cliente.Saldo - transacao.Valor
-	_, err = tx.NewUpdate().Model((*entities.Cliente)(nil)).
-		Set("saldo = + ?", novoSaldo).
-		Where("id_cliente = ?", transacao.IDCliente).
-		Exec(ctx)
 
-	if err != nil {
-		fmt.Printf("[%s] Erro ao atualizar o saldo %v:\n", functionName, err)
-		tx.Rollback()
-		return 0, 0, false, err
+	go func() {
+		_, err = tx.NewUpdate().Model((*entities.Cliente)(nil)).
+			Set("saldo = + ?", novoSaldo).
+			Where("id_cliente = ?", transacao.IDCliente).
+			Exec(ctx)
+		errChan <- err
+		doneChan <- true
+	}()
+
+	go func() {
+		_, err = tx.NewInsert().
+			Model(&transacao).
+			Exec(ctx)
+
+		errChan <- err
+		doneChan <- true
+	}()
+
+	// Aguardar a conclusão das duas operações
+	<-doneChan
+	<-doneChan
+
+	// Verificar erros
+	close(errChan)
+	for e := range errChan {
+		if e != nil {
+			tx.Rollback()
+			return 0, 0, false, e
+		}
 	}
 
-	_, err = tx.NewInsert().
-		Model(&transacao).
-		Exec(ctx)
-
-	if err != nil {
-		fmt.Printf("[%s] ao salvar a transação %v:\n", functionName, err)
-		tx.Rollback()
+	if err = tx.Commit(); err != nil {
+		fmt.Printf("[%s] Erro ao fazer commit da transação: %v\n", functionName, err)
 		return 0, 0, false, err
 	}
 
 	tx.Commit()
 
-	return cliente.Saldo + transacao.Valor, cliente.Limite, false, nil
+	return novoSaldo, cliente.Limite, false, nil
 }
 
 func Debito(transacao entities.Transacao) (float64, float64, bool, error) {
@@ -53,6 +72,9 @@ func Debito(transacao entities.Transacao) (float64, float64, bool, error) {
 
 	ctx := context.Background()
 	db := database.GetDB()
+
+	errChan := make(chan error, 2)
+	doneChan := make(chan bool, 2)
 
 	tx, err := db.BeginTx(ctx, &sql.TxOptions{})
 
@@ -68,24 +90,39 @@ func Debito(transacao entities.Transacao) (float64, float64, bool, error) {
 		return cliente.Saldo, cliente.Limite, true, fmt.Errorf("[%s] Operação excederia o limite do cliente", functionName)
 	}
 
-	_, err = tx.NewUpdate().Model((*entities.Cliente)(nil)).
-		Set("saldo = ?", novoSaldo).
-		Where("id_cliente = ?", transacao.IDCliente).
-		Exec(ctx)
+	go func() {
+		_, err = tx.NewUpdate().Model((*entities.Cliente)(nil)).
+			Set("saldo = ?", novoSaldo).
+			Where("id_cliente = ?", transacao.IDCliente).
+			Exec(ctx)
+		errChan <- err
+		doneChan <- true
+	}()
 
-	if err != nil {
-		fmt.Printf("[%s] Erro ao atualizar o saldo %v:\n", functionName, err)
-		tx.Rollback()
-		return 0, 0, false, err
+	go func() {
+		_, err = tx.NewInsert().
+			Model(&transacao).
+			Exec(ctx)
+
+		errChan <- err
+		doneChan <- true
+	}()
+
+	// Aguardar a conclusão das duas operações
+	<-doneChan
+	<-doneChan
+
+	// Verificar erros
+	close(errChan)
+	for e := range errChan {
+		if e != nil {
+			tx.Rollback()
+			return 0, 0, false, e
+		}
 	}
 
-	_, err = tx.NewInsert().
-		Model(&transacao).
-		Exec(ctx)
-
-	if err != nil {
-		fmt.Printf("[%s] ao salvar a transação %v:\n", functionName, err)
-		tx.Rollback()
+	if err = tx.Commit(); err != nil {
+		fmt.Printf("[%s] Erro ao fazer commit da transação: %v\n", functionName, err)
 		return 0, 0, false, err
 	}
 
