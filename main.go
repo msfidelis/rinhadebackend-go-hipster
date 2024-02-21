@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"main/routes/clientes"
 	"main/routines"
 
 	"github.com/gofiber/fiber/v2"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func main() {
@@ -14,8 +14,8 @@ func main() {
 	routines.ClientesMemoryMapping()
 
 	app := fiber.New(fiber.Config{
-		JSONEncoder: json.Marshal,
-		JSONDecoder: json.Unmarshal,
+		JSONEncoder: jsoniter.ConfigCompatibleWithStandardLibrary.Marshal,
+		JSONDecoder: jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal,
 		Prefork:     true,
 	})
 	app.Get("/clientes/:id/extrato", clientes.Extrato)

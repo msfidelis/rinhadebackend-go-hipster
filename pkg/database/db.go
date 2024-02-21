@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"sync"
 
 	"github.com/jackc/pgx/v5"
@@ -14,6 +15,7 @@ import (
 )
 
 var onceDB sync.Once
+var onceDBPGX sync.Once
 var onceBun sync.Once
 var pgxInstance *sql.DB
 var dbInstance *sql.DB
@@ -39,15 +41,17 @@ func GetDBConn() *sql.DB {
 
 // Retorna a conexão com o database em utilizando uma estratégia de Singleton
 func GetPGX() *sql.DB {
-	onceDB.Do(func() {
+	onceDBPGX.Do(func() {
 		var err error
 		config, err := pgx.ParseConfig(getDBUrl())
 		if err != nil {
 			panic(err)
 		}
-		// config.PreferSimpleProtocol = true
-
 		pgxInstance = stdlib.OpenDB(*config)
+
+		maxOpenConns := 4 * runtime.GOMAXPROCS(0)
+		pgxInstance.SetMaxOpenConns(maxOpenConns)
+		pgxInstance.SetMaxIdleConns(maxOpenConns)
 	})
 	return pgxInstance
 }
@@ -65,7 +69,8 @@ func getDBUrl() string {
 func GetDB() *bun.DB {
 	onceBun.Do(func() {
 		conn := GetPGX()
-		BunInstance = bun.NewDB(conn, pgdialect.New())
+		// conn := GetDBConn()
+		BunInstance = bun.NewDB(conn, pgdialect.New(), bun.WithDiscardUnknownColumns())
 	})
 	return BunInstance
 }

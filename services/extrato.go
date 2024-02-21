@@ -2,25 +2,30 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"main/entities"
 	"main/pkg/database"
+	"time"
 )
 
 func Extrato(id_cliente string) ([]entities.Transacao, error) {
-	functionName := "Extrato"
-
 	var transacoes []entities.Transacao
 
-	ctx := context.Background()
-	db := database.GetDB()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	err := db.NewSelect().Model(&transacoes).Where("id_cliente = ?", id_cliente).Limit(10).Order("realizada_em DESC").Scan(ctx)
+	db := database.GetDB()
+	err := db.NewSelect().
+		Model(&transacoes).
+		Where("id_cliente = ?", id_cliente).
+		Limit(10).
+		Order("realizada_em DESC").
+		Scan(ctx)
 	if err != nil {
-		fmt.Printf("[%s] Erro ao retornar o extrato do cliente %v:\n", functionName, err)
-		return transacoes, err
+		log.Printf("[%s] Erro ao retornor o extrato do cliente %s: %v", "Extrato", id_cliente, err)
+		return nil, err
 	}
 
-	return transacoes, err
+	return transacoes, nil
 
 }

@@ -21,9 +21,9 @@ func Credito(transacao entities.Transacao) (float64, float64, bool, error) {
 		fmt.Printf("[%s] Erro ao encontrar o cliente %v:\n", functionName, err)
 		return 0, 0, false, err
 	}
-
+	novoSaldo := cliente.Saldo - transacao.Valor
 	_, err = tx.NewUpdate().Model((*entities.Cliente)(nil)).
-		Set("saldo = saldo + ?", transacao.Valor).
+		Set("saldo = + ?", novoSaldo).
 		Where("id_cliente = ?", transacao.IDCliente).
 		Exec(ctx)
 
