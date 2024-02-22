@@ -17,7 +17,7 @@ services:
     depends_on:
       - api-01
       - api-02
-      
+
   postgres:
     image: postgres:16
     container_name: db-rinha
@@ -54,7 +54,6 @@ services:
           cpus: "0.4"
           memory: "175M"
     depends_on:
-      - redis
       - postgres
 
   api-02:
@@ -76,7 +75,6 @@ services:
           cpus: "0.4"
           memory: "175M"
     depends_on:
-      - redis
       - postgres
       
 volumes:
