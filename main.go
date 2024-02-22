@@ -18,7 +18,7 @@ func main() {
 		JSONEncoder: jsoniter.ConfigCompatibleWithStandardLibrary.Marshal,
 		JSONDecoder: jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal,
 		Immutable:   true,
-		Prefork:     true,
+		Prefork:     false,
 	})
 
 	// Initialize default config
