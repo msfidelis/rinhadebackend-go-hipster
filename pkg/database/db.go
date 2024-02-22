@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"runtime"
 	"sync"
 
 	"github.com/jackc/pgx/v5"
@@ -16,7 +15,9 @@ import (
 
 var onceDB sync.Once
 var onceDBPGX sync.Once
+var onceDBPGXPool sync.Once
 var onceBun sync.Once
+var pgxPoolInstance *sql.DB
 var pgxInstance *sql.DB
 var dbInstance *sql.DB
 var BunInstance *bun.DB
@@ -39,6 +40,18 @@ func GetDBConn() *sql.DB {
 	return dbInstance
 }
 
+// func GetPGXPool() {
+// 	onceDBPGX.Do(func() {
+// 		var err error
+// 		config, err := pgxpool.ParseConfig(getDBUrl())
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 		pgxInstance = stdlib.OpenDB(*config)
+// 	})
+
+// }
+
 // Retorna a conexão com o database em utilizando uma estratégia de Singleton
 func GetPGX() *sql.DB {
 	onceDBPGX.Do(func() {
@@ -47,11 +60,11 @@ func GetPGX() *sql.DB {
 		if err != nil {
 			panic(err)
 		}
-		pgxInstance = stdlib.OpenDB(*config)
+		config.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
-		maxOpenConns := 4 * runtime.GOMAXPROCS(0)
-		pgxInstance.SetMaxOpenConns(maxOpenConns)
-		pgxInstance.SetMaxIdleConns(maxOpenConns)
+		pgxInstance = stdlib.OpenDB(*config)
+		pgxInstance.SetMaxOpenConns(100)
+		pgxInstance.SetMaxIdleConns(100)
 	})
 	return pgxInstance
 }

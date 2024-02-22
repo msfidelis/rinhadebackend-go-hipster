@@ -3,6 +3,7 @@ package routines
 import (
 	"fmt"
 	"main/pkg/database"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -13,6 +14,8 @@ import (
 func DatabaseMigration() {
 
 	consumerName := "DatabaseMigration"
+
+	time.Sleep(10 * time.Second)
 
 	db := database.GetPGX()
 

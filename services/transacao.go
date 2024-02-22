@@ -57,13 +57,11 @@ func Credito(transacao entities.Transacao) (float64, float64, bool, error) {
 		}
 	}
 
+	// Commit da Transação
 	if err = tx.Commit(); err != nil {
 		fmt.Printf("[%s] Erro ao fazer commit da transação: %v\n", functionName, err)
 		return 0, 0, false, err
 	}
-
-	tx.Commit()
-
 	return novoSaldo, cliente.Limite, false, nil
 }
 
@@ -121,12 +119,11 @@ func Debito(transacao entities.Transacao) (float64, float64, bool, error) {
 		}
 	}
 
+	// Commit da Transação
 	if err = tx.Commit(); err != nil {
 		fmt.Printf("[%s] Erro ao fazer commit da transação: %v\n", functionName, err)
 		return 0, 0, false, err
 	}
-
-	tx.Commit()
 
 	return novoSaldo, cliente.Limite, false, nil
 }

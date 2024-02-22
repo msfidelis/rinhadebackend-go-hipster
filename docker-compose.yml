@@ -1,22 +1,20 @@
 version: '3.8'
 services:
-  # envoy:
-  #   image: envoyproxy/envoy:v1.29.1
-  #   container_name: proxy
-  #   volumes:
-  #     - ./envoy.yaml:/etc/envoy/envoy.yaml
-  #   ports:
-  #     - "9999:9999" 
-  #     - "9901:9901"
-  #   command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "0.3"
-  #         memory: "100M"
-  #   depends_on:
-  #     - api-01
-  #     - api-02
+  envoy:
+    image: envoyproxy/envoy:v1.29.1
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "9999:9999" 
+      - "9901:9901"
+    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: "100M"
+    depends_on:
+      - api-01
 
   # redis-hipster:
   #   image: redis:7.2.4
