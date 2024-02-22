@@ -17,22 +17,7 @@ services:
     depends_on:
       - api-01
       - api-02
-
-  redis:
-    image: redis:7.2.4
-    container_name: redis-rinha
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    deploy:
-      resources:
-        limits:
-          cpus: "0.2"
-          memory: "50M"
-    depends_on:
-      - postgres
-
+      
   postgres:
     image: postgres:16
     container_name: db-rinha
@@ -66,8 +51,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.3"
-          memory: "125M"
+          cpus: "0.4"
+          memory: "175M"
     depends_on:
       - redis
       - postgres
@@ -88,8 +73,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.3"
-          memory: "125M"
+          cpus: "0.4"
+          memory: "175M"
     depends_on:
       - redis
       - postgres
