@@ -52,7 +52,7 @@ services:
       resources:
         limits:
           cpus: "0.4"
-          memory: "175M"
+          memory: "150M"
     depends_on:
       - postgres
 
@@ -73,7 +73,7 @@ services:
       resources:
         limits:
           cpus: "0.4"
-          memory: "175M"
+          memory: "150M"
     depends_on:
       - postgres
       

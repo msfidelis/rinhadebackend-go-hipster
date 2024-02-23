@@ -2,6 +2,7 @@ package clientes
 
 import (
 	"main/dto"
+	"main/pkg/database"
 	"main/pkg/memory"
 	"main/services"
 	"time"
@@ -20,7 +21,9 @@ func Extrato(c *fiber.Ctx) error {
 		return dto.FiberError(c, fiber.StatusNotFound, "cliente não encontrado")
 	}
 
-	cliente, err := services.BuscaCliente(id)
+	db := database.GetDB()
+
+	cliente, err := services.BuscaCliente(c.Context(), db, id)
 	if err != nil {
 		return dto.FiberError(c, fiber.StatusInternalServerError, "Erro ao recuperar o cliente")
 	}

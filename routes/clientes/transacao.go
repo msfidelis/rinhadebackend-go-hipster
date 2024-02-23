@@ -15,8 +15,8 @@ var functionName = "NovaTransacao"
 
 var request dto.TransacaoRequest
 
-var saldo float64
-var limite float64
+var saldo int64
+var limite int64
 var semLimite bool
 var err error
 
@@ -44,21 +44,12 @@ func NovaTransacao(c *fiber.Ctx) error {
 		RealizadaEm: time.Now().UTC().Format(time.RFC3339Nano),
 	}
 
-	// Operação de Crédito ou Débito
-	switch request.Tipo {
-	case "c":
-		saldo, limite, semLimite, err = services.Credito(*transacao)
-	case "d":
-		saldo, limite, semLimite, err = services.Debito(*transacao)
-	default:
-		return dto.FiberError(c, fiber.StatusBadRequest, "tipo de operação inválida")
-	}
+	saldo, limite, semLimite, err = services.Crebito(*transacao)
 
 	if semLimite {
 		return dto.FiberError(c, fiber.StatusUnprocessableEntity, "cliente sem limite disponível")
 	}
 
-	// Verifica Erros durante as operações de crédito ou débito
 	if err != nil {
 		return dto.FiberError(c, fiber.StatusInternalServerError, err.Error())
 	}

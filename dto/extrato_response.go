@@ -8,7 +8,7 @@ type ExtratoResponse struct {
 }
 
 type Saldo struct {
-	Total       float64 `json:"total"`
-	DataExtrato string  `json:"data_extrato"`
-	Limite      float64 `json:"limite"`
+	Total       int64  `json:"total"`
+	DataExtrato string `json:"data_extrato"`
+	Limite      int64  `json:"limite"`
 }

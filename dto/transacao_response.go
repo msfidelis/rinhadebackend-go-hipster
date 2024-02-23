@@ -1,6 +1,6 @@
 package dto
 
 type TransacaoResponse struct {
-	Limite float64 `json:"limite"`
-	Saldo  float64 `json:"saldo"`
+	Limite int64 `json:"limite"`
+	Saldo  int64 `json:"saldo"`
 }

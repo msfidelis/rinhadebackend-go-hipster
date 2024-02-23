@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS clientes (
     id_cliente SERIAL PRIMARY KEY,
-    limite DECIMAL(10, 2) NOT NULL,
-    saldo DECIMAL(10, 2) NOT NULL DEFAULT 0
+    limite INTEGER NOT NULL,
+    saldo INTEGER NOT NULL DEFAULT 0
 );
 
 INSERT INTO clientes (id_cliente, limite, saldo) VALUES
