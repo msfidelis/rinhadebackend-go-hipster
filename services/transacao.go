@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"main/entities"
 	"main/pkg/database"
+
+	"github.com/uptrace/bun"
 )
 
 func Credito(transacao entities.Transacao) (float64, float64, bool, error) {
@@ -19,7 +21,7 @@ func Credito(transacao entities.Transacao) (float64, float64, bool, error) {
 
 	tx, err := db.BeginTx(ctx, &sql.TxOptions{})
 
-	cliente, err := BuscaCliente(transacao.IDCliente)
+	cliente, err := BuscaCliente(ctx, db, transacao.IDCliente)
 	if err != nil {
 		fmt.Printf("[%s] Erro ao encontrar o cliente %v:\n", functionName, err)
 		return 0, 0, false, err
@@ -44,7 +46,7 @@ func Credito(transacao entities.Transacao) (float64, float64, bool, error) {
 		doneChan <- true
 	}()
 
-	// Aguardar a conclusão das duas operações
+	// Aguarda a conclusão das duas operações
 	<-doneChan
 	<-doneChan
 
@@ -76,13 +78,13 @@ func Debito(transacao entities.Transacao) (float64, float64, bool, error) {
 
 	tx, err := db.BeginTx(ctx, &sql.TxOptions{})
 
-	cliente, err := BuscaCliente(transacao.IDCliente)
+	cliente, err := BuscaCliente(ctx, db, transacao.IDCliente)
 	if err != nil {
 		fmt.Printf("[%s] Erro ao encontrar o cliente %v:\n", functionName, err)
 		return 0, 0, false, err
 	}
 
-	fmt.Println(cliente)
+	// fmt.Println(cliente)
 
 	novoSaldo := cliente.Saldo - transacao.Valor
 	if novoSaldo < -cliente.Limite {
@@ -130,12 +132,9 @@ func Debito(transacao entities.Transacao) (float64, float64, bool, error) {
 	return novoSaldo, cliente.Limite, false, nil
 }
 
-func BuscaCliente(id string) (*entities.Cliente, error) {
+func BuscaCliente(ctx context.Context, db *bun.DB, id string) (*entities.Cliente, error) {
 	functionName := "BuscaCLiente"
 	cliente := new(entities.Cliente)
-
-	ctx := context.Background()
-	db := database.GetDB()
 
 	err := db.NewSelect().Model(cliente).Where("id_cliente = ?", id).Scan(ctx)
 	if err != nil {

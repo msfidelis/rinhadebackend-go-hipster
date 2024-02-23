@@ -1,6 +1,7 @@
 package clientes
 
 import (
+	"fmt"
 	"main/dto"
 	"main/entities"
 	"main/pkg/memory"
@@ -13,7 +14,6 @@ import (
 var functionName = "NovaTransacao"
 
 var request dto.TransacaoRequest
-var response dto.TransacaoResponse
 
 var saldo float64
 var limite float64
@@ -62,6 +62,13 @@ func NovaTransacao(c *fiber.Ctx) error {
 	if err != nil {
 		return dto.FiberError(c, fiber.StatusInternalServerError, err.Error())
 	}
+
+	fmt.Printf("[%v] Cliente: %v\n", c.Context().ID(), id)
+	fmt.Printf("[%v] Tipo: %v\n", c.Context().ID(), request.Tipo)
+	fmt.Printf("[%v] Valor: %v\n", c.Context().ID(), request.Valor)
+	fmt.Printf("[%v] Descricao: %v\n", c.Context().ID(), request.Descricao)
+	fmt.Printf("[%v] Saldo: %v\n", c.Context().ID(), saldo)
+	fmt.Printf("[%v] Limite: %v\n", c.Context().ID(), limite)
 
 	response := dto.TransacaoResponse{
 		Limite: limite,
